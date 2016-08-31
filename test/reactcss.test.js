@@ -67,6 +67,7 @@ describe('reactCSS', () => {
           'default': {
             card: {
               boxShadow: '0 0 2px rgba(0,0,0,.1)',
+              color: 'rgb(255, 255, 255)'
             },
           },
           'zIndex-2': {
@@ -74,6 +75,9 @@ describe('reactCSS', () => {
               boxShadow: '0 4px 8px rgba(0,0,0,.15)',
             },
           },
+          'foo-true': {
+            color: 'rgb(0, 0, 0)'
+          }
         }, this.props)
         return (
           <div>
@@ -83,9 +87,46 @@ describe('reactCSS', () => {
       }
     }
 
-    const component = TestUtils.renderIntoDocument(<Component zIndex="2" />)
+    const component = TestUtils.renderIntoDocument(<Component zIndex="2" foo={false} />)
     const card = TestUtils.findRenderedDOMComponentWithClass(component, 'card')
-    expect(card._style._values).to.eql({ 'box-shadow': '0 4px 8px rgba(0,0,0,.15)' })
+    expect(card._style._values).to.eql({ 'box-shadow': '0 4px 8px rgba(0,0,0,.15)', 'color': 'rgb(255, 255, 255)' })
+  });
+
+  it('should not mutate original stylesheet', () => {
+    const stylesheet = {
+      'default': {
+        item: {
+          color: 'rgb(255, 255, 255)'
+        }
+      },
+      'active': {
+        item: {
+          color: 'rgb(0, 0, 0)'
+        }
+      }
+    };
+    function Component(props) {
+      const styles = reactCSS(stylesheet, props);
+      return (
+        <div className={props.className} style={ styles.item }></div>
+      );
+    }
+
+    class Items extends React.Component {
+      render() {
+        return (
+          <div className="root">
+            <Component className="item-1" active={false} />
+            <Component className="item-2" active={true} />
+            <Component className="item-3" active={false} />
+          </div>
+        )
+      }
+    }
+
+    const component = TestUtils.renderIntoDocument(<Items />);
+    const item = TestUtils.findRenderedDOMComponentWithClass(component, 'item-3');
+    expect(item._style._values).to.eql({ 'color': 'rgb(255, 255, 255)' });
   })
 
   // it('should throw a deprecation warning for using the old extend', () => {

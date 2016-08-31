@@ -3,7 +3,7 @@
 import _ from 'lodash'
 
 export const mergeClasses = (classes, activeNames = []) => {
-  const styles = classes.default && Object.assign({}, classes.default) || {}
+  const styles = classes.default && JSON.parse(JSON.stringify(classes.default)) || {}
   activeNames.map((name) => {
     const toMerge = classes[name]
     if (!!toMerge) {
